@@ -1,4 +1,4 @@
-/* 入学式用：UI改善、画像の大きさ調整機能追加、背景透過＆位置調整バージョン */
+/* 入学式用：UI改善、画像の大きさ調整機能、花びらのサイズ調整機能追加バージョン */
 let sakura = [];
 let Num = 400; 
 
@@ -11,12 +11,13 @@ let returnButton;
 let sizeSlider; 
 let textYPosSlider; 
 let alignSelect; 
+let sakuraSizeSlider; // ★花びらのサイズ用スライダー
 
 // 画像アップロード・調整UI
 let imgUploadBtn; 
-let imageSizeSlider; // ★画像の大きさ用スライダー
-let imageYPosSlider; // 画像の縦位置用スライダー
-let imageXPosSlider; // 画像の横位置用スライダー
+let imageSizeSlider; 
+let imageYPosSlider; 
+let imageXPosSlider; 
 
 let charImg; 
 
@@ -32,7 +33,7 @@ let space = 20;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
-  // ★スライダーの見た目をカスタマイズするCSSを定義
+  // スライダーの見た目をカスタマイズするCSSを定義
   defineSliderStyle();
   
   colorMode(HSB);
@@ -40,13 +41,12 @@ function setup() {
   // --- UIの作成 ---
   inputArea = createElement('textarea');
   inputArea.attribute('placeholder', 'ここにメッセージを入力してください');
-  inputArea.style('font-size', '20px'); // 少し小さくして重なりを防ぐ
+  inputArea.style('font-size', '20px'); 
   inputArea.style('padding', '10px');
   inputArea.style('border', '1px solid #ccc');
   inputArea.style('border-radius', '10px');
   
   sizeSlider = createSlider(30, 200, 80); 
-  // ★CSSクラスを適用してカスタマイズ
   sizeSlider.addClass('mySlider');
   
   textYPosSlider = createSlider(10, 90, 35); 
@@ -60,12 +60,15 @@ function setup() {
   alignSelect.style('font-size', '16px');
   alignSelect.style('padding', '5px');
   alignSelect.style('border-radius', '5px');
+
+  // ★花びらのサイズ用スライダー（0.1倍〜3.0倍の範囲、初期値1.0倍、ステップ0.1）
+  sakuraSizeSlider = createSlider(0.1, 3.0, 1.0, 0.1);
+  sakuraSizeSlider.addClass('mySlider');
   
   imgUploadBtn = createFileInput(handleFile);
   imgUploadBtn.style('font-size', '16px');
   imgUploadBtn.style('margin', '10px 0');
 
-  // ★画像の大きさ用スライダー（0.1倍〜1.0倍の範囲、初期値0.6倍、ステップ0.01）
   imageSizeSlider = createSlider(0.1, 1.0, 0.6, 0.01);
   imageSizeSlider.addClass('mySlider');
   
@@ -84,7 +87,6 @@ function setup() {
   startButton.style('padding', '10px 20px');
   startButton.style('cursor', 'pointer');
   startButton.style('transition', 'background-color 0.2s');
-  // ホバー時のエフェクト
   startButton.mouseOver(() => startButton.style('background-color', '#ffb6c1'));
   startButton.mouseOut(() => startButton.style('background-color', '#ff96b4'));
   
@@ -104,11 +106,9 @@ function setup() {
   initSakura();
 }
 
-// ★スライダーの見た目をカスタマイズするCSSを定義する関数
 function defineSliderStyle() {
   let style = createElement('style');
   style.html(`
-    /* トラック（溝）のスタイル */
     input[type=range].mySlider {
       -webkit-appearance: none;
       background: transparent;
@@ -121,23 +121,22 @@ function defineSliderStyle() {
       width: 100%;
       height: 8px;
       cursor: pointer;
-      background: #ddd; /* デフォルトのグレー */
+      background: #ddd; 
       border-radius: 4px;
     }
-    /* つまみのスタイル（ピンクに統一） */
     input[type=range].mySlider::-webkit-slider-thumb {
       height: 20px;
       width: 20px;
       border-radius: 50%;
-      background: #ff96b4; /* ピンク */
+      background: #ff96b4; 
       cursor: pointer;
       -webkit-appearance: none;
-      margin-top: -6px; /* トラックの中央に配置 */
+      margin-top: -6px; 
       box-shadow: 0 1px 3px rgba(0,0,0,0.3);
       transition: background 0.2s;
     }
     input[type=range].mySlider::-webkit-slider-thumb:hover {
-      background: #ffb6c1; /* ホバー時は少し薄く */
+      background: #ffb6c1; 
     }
   `);
 }
@@ -157,7 +156,6 @@ function processUploadedImage(img) {
   charImg = img;
   processImage(charImg);
   isImageReady = true;
-  // ★画像がロードされたらUIの配置を再計算して表示
   positionUI();
 }
 
@@ -191,8 +189,6 @@ function draw() {
       colorMode(RGB);
       let imgRatio = charImg.height / charImg.width;
       
-      // ★画面幅に合わせて自動調整するロジックを削除し、スライダーの値で直接指定
-      // 現在、dispHeight は画面高さの60%（0.6倍）に制限されているが、これをスライダーの値に変更
       let dispHeight = height * imageSizeSlider.value();
       let dispWidth = dispHeight / imgRatio;
       
@@ -202,7 +198,7 @@ function draw() {
       image(charImg, imgX, imgY, dispWidth, dispHeight);
     }
 
-    colorMode(RGB); // drawMessageの前でRGBに戻す
+    colorMode(RGB); 
     drawMessage(msgText, sizeSlider.value(), alignSelect.value(), textYPosSlider.value());
   }
 }
@@ -215,13 +211,17 @@ function startProjection() {
   sizeSlider.hide(); 
   textYPosSlider.hide(); 
   alignSelect.hide();
+  sakuraSizeSlider.hide(); // ★花びらスライダーを隠す
   imgUploadBtn.hide(); 
-  imageSizeSlider.hide(); // ★隠す
+  imageSizeSlider.hide(); 
   imageYPosSlider.hide(); 
   imageXPosSlider.hide(); 
   startButton.hide();
   returnButton.show(); 
   mode = 'PLAY';
+
+  // ★「桜を降らせる」を押した時に、スライダーの値を読み込んで桜を再生成する
+  initSakura();
 }
 
 function returnToInput() {
@@ -229,8 +229,9 @@ function returnToInput() {
   sizeSlider.show(); 
   textYPosSlider.show(); 
   alignSelect.show();
+  sakuraSizeSlider.show(); // ★花びらスライダーを表示
   imgUploadBtn.show(); 
-  imageSizeSlider.show(); // ★表示する
+  imageSizeSlider.show(); 
   imageYPosSlider.show(); 
   imageXPosSlider.show(); 
   startButton.show();
@@ -250,12 +251,11 @@ function drawMessage(txt, tSize, alignStr, yPosPerc) {
   textFont('sans-serif');
   textStyle(BOLD);
 
-  // ★修正箇所：画像がない時だけ縁を鮮やかなピンクにする
-  colorMode(RGB); // 念のためRGBモードであることを確認
+  colorMode(RGB); 
   stroke(255, 150, 180); 
   
   strokeWeight(max(4, tSize / 8)); 
-  fill(255); // 文字の中身は白
+  fill(255); 
   textSize(tSize);
   textLeading(tSize * 1.3);
   text(txt, posX, posY); 
@@ -275,18 +275,19 @@ function drawInputScreenBackground() {
   text("文字サイズ: " + sizeSlider.value(), width / 2, sizeSlider.y - space / 2);
   text("縦の位置 (上からの割合): " + textYPosSlider.value() + " %", width / 2, textYPosSlider.y - space / 2);
   text("配置:", width / 2, alignSelect.y - space / 2);
+
+  // ★花びらの設定ラベル
+  text("花びらのサイズ (倍率): " + sakuraSizeSlider.value().toFixed(1), width / 2, sakuraSizeSlider.y - space / 2);
   
   // 画像の設定ラベル
   text("投影する画像を選択:", width / 2, imgUploadBtn.y - space / 2);
   
   if (charImg && isImageReady) {
-    // ★ラベルと値を表示
     text("画像の大きさ (倍率): " + imageSizeSlider.value().toFixed(2), width / 2, imageSizeSlider.y - space / 2);
     text("画像の縦位置 (上からの割合): " + imageYPosSlider.value() + " %", width / 2, imageYPosSlider.y - space / 2);
     text("画像の横位置 (左からの割合): " + imageXPosSlider.value() + " %", width / 2, imageXPosSlider.y - space / 2);
   } else {
-    fill(0, 0, 30); // グレー
-    // ★メッセージを修正
+    fill(0, 0, 30); 
     text("画像を使用する場合は、選択してください（白い背景は透明になります）。\n画像なしでも「桜を降らせる」ことは可能です。", width / 2, startButton.y - space * 1.5);
   }
 }
@@ -300,8 +301,8 @@ function positionUI() {
   areaWidth = min(600, width * 0.8);
   areaHeight = 150;
   
-  // ★全体をさらに上に、UI要素間のスペースを確保
-  baseY = height / 2 - 320; 
+  // ★要素が増えた分、全体を少し上へずらしてはみ出しを防ぐ
+  baseY = height / 2 - 350; 
   
   inputArea.size(areaWidth, areaHeight);
   inputArea.position((width - areaWidth) / 2, baseY);
@@ -309,7 +310,7 @@ function positionUI() {
   let sliderWidth = 300;
   
   // 文字の設定UI
-  let currentY = baseY + areaHeight +20+ space * 1.5;
+  let currentY = baseY + areaHeight + 20 + space * 1.5;
   sizeSlider.size(sliderWidth);
   sizeSlider.position((width - sliderWidth) / 2, currentY);
   
@@ -320,6 +321,11 @@ function positionUI() {
   currentY += space * 2.5;
   alignSelect.size(150);
   alignSelect.position((width - 150) / 2, currentY);
+
+  // ★花びらの設定UI
+  currentY += space * 2.5;
+  sakuraSizeSlider.size(sliderWidth);
+  sakuraSizeSlider.position((width - sliderWidth) / 2, currentY);
   
   // 画像の設定UI
   currentY += space * 3.5;
@@ -331,7 +337,6 @@ function positionUI() {
     imageYPosSlider.show();
     imageXPosSlider.show();
 
-    // ★グループ化して配置、間隔を調整
     currentY += space * 3.5;
     imageSizeSlider.size(sliderWidth);
     imageSizeSlider.position((width - sliderWidth) / 2, currentY);
@@ -354,7 +359,7 @@ function positionUI() {
     imageXPosSlider.hide();
     
     // 開始ボタンの位置
-    currentY += space * 5; // 少し下へ
+    currentY += space * 5; 
     startButton.size(200, 60);
     startButton.position((width - 200) / 2, currentY);
   }
@@ -372,13 +377,18 @@ function initSakura() {
 class Sakura {
   constructor() {
     this.n = 4;
-    this.size = random(20, 50);
+    
+    // ★スライダーの値を読み込んで大きさに掛け算する
+    // (まだスライダーが作られていない初期化のタイミングは 1.0 にする)
+    let scaleMultiplier = sakuraSizeSlider ? sakuraSizeSlider.value() : 1.0;
+    this.size = random(20, 50) * scaleMultiplier;
+    
     this.xBase = random(width);
     this.xRadius = random(50, 100);
     this.xTheta = random(360);
     this.xaVelocity = random(1, 2);
     this.vecLocation = createVector(this.xBase, random(-height, 0));
-    this.yVelocity = this.size / 20;
+    this.yVelocity = this.size / 20; // 落下速度もサイズに比例します
     this.hue = random(347, 353);
     this.saturation = random(25, 40);
     this.brightness = 100;
